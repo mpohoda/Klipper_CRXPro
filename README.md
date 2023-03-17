@@ -56,7 +56,7 @@ printer.cfg (for Creality CR-X Pro - v.1 some unsupported values)
 # printer_size: 300x300x400
 # To use this config, during "make menuconfig" select the AVR atmega2560
 
-# Flash this firmware by "make flash FLASH_DEVICE="
+# Flash this firmware by "make flash FLASH_DEVICE=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0"
 
 # See docs/Config_Reference.md for a description of parameters.
 
@@ -427,7 +427,7 @@ printer.cfg (for Creality CR-X Pro - v.2) this config was created during several
 # printer_size: 300x300x400
 # To use this config, during "make menuconfig" select the AVR atmega2560
 
-# Flash this firmware by "make flash FLASH_DEVICE="
+# Flash this firmware by "make flash FLASH_DEVICE=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0"
 
 # See docs/Config_Reference.md for a description of parameters.
 
@@ -447,8 +447,6 @@ cs_pin: rpi:None
 accel_chip: adxl345
 probe_points:
     100, 100, 20  # an example
- 
-##---- this config, the firmware should be compiled for the AVR atmega2560.
  
 [stepper_x]
 step_pin: PF0
