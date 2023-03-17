@@ -42,7 +42,7 @@ sudo service klipper start
 ```
 
 # Configure
-printer.cfg for Creality CR-X Pro (v.1 - some unsupported values)
+printer.cfg (for Creality CR-X Pro - v.1 some unsupported values)
 ```
 [mcu]
 serial: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0
