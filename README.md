@@ -420,6 +420,391 @@ gcode:
 
 ```
 
+# Configure
+printer.cfg (for Creality CR-X Pro - v.2) this config was created during several prints and also after calibrations with sensonrs and test prints 
+
+```
+[mcu]
+serial: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0
+
+[mcu rpi]
+serial: /tmp/klipper_host_mcu
+
+[adxl345]
+cs_pin: rpi:None
+
+[resonance_tester]
+accel_chip: adxl345
+probe_points:
+    100, 100, 20  # an example
+ 
+##---- this config, the firmware should be compiled for the AVR atmega2560.
+ 
+[stepper_x]
+step_pin: PF0
+dir_pin: PF1
+enable_pin: !PD7
+microsteps: 16
+rotation_distance: 40
+endstop_pin: ^PE5
+position_endstop: 0
+position_max: 300
+homing_speed: 50
+ 
+[stepper_y]
+step_pin: PF6
+dir_pin: !PF7
+enable_pin: !PF2
+microsteps: 16
+rotation_distance: 40
+endstop_pin: ^PJ1
+position_endstop: 0
+position_max: 310
+homing_speed: 50
+ 
+[stepper_z]
+step_pin: PL3
+dir_pin: !PL1
+enable_pin: !PK0
+microsteps: 16
+rotation_distance: 8
+ 
+##-----comment out next line if you do not have a BLTouch
+endstop_pin: probe:z_virtual_endstop
+ 
+##-----uncomment next two lines if you do not have a BLTouch
+#endstop_pin: ^PD3
+#position_endstop: 10
+ 
+position_max: 400
+position_min: -6.0
+
+#input shaper in printer config after measurment with sensor these values are some defaults for CR family printers working also for our CR-X pro
+#[input_shaper]
+#shaper_freq_x: 91.3
+#shaper_type_x: ei
+#shaper_freq_y: 42.6
+#shaper_type_y: ei
+
+#CR10
+#shaper_freq_x: 104.0
+#shaper_type_x: mzv
+#shaper_freq_y: 28.6
+#shaper_type_y: mzv
+
+#CR10V3
+#shaper_freq_x: 39.0
+#shaper_type_x: 2hump_ei
+#shaper_freq_y: 39.0
+#shaper_type_y: 2hump_ei
+
+[extruder]
+step_pin: PA4
+dir_pin: PA6
+enable_pin: !PA2
+microsteps: 16
+rotation_distance: 23.072855
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+heater_pin: PB4
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PK5
+control: pid
+pid_Kp: 22.2
+pid_Ki: 1.08
+pid_Kd: 114
+min_temp: 0
+max_temp: 265
+pressure_advance: 0.388
+max_extrude_only_distance: 1000
+ 
+[extruder_stepper extruder1]
+extruder: extruder
+step_pin: PC1
+dir_pin:  PC3
+enable_pin: !PC7
+microsteps: 16
+rotation_distance: 23.072855
+
+[verify_heater extruder]  
+heating_gain: 2 
+check_gain_time:35  
+hysteresis: 10  
+max_error: 285
+
+[heater_bed]
+heater_pin: PH5
+sensor_type: ATC Semitec 104GT-2
+sensor_pin: PK6
+control: pid
+pid_Kp: 690.34
+pid_Ki: 111.47
+pid_Kd: 1068.83
+min_temp: 0
+max_temp: 130
+ 
+[fan]
+pin: PH6
+ 
+[safe_z_home]
+home_xy_position: 150, 150
+speed: 100
+z_hop: 10
+z_hop_speed: 5
+ 
+##-------comment out entire [bltouch] section if you do not have a BLTouch
+[bltouch]
+sensor_pin: ^PD3
+control_pin: PB5
+x_offset: 55
+y_offset: -6
+#z_offset: 0.0
+samples: 2
+speed: 6.0
+pin_up_touch_mode_reports_triggered: False
+ 
+## -----These settings need to be updated based on your BLTouch mounting position
+[bed_mesh]
+speed: 180
+horizontal_move_z: 5
+mesh_min: 60,6
+mesh_max: 290,304
+probe_count: 10,10
+fade_start: 1.0
+fade_end: 10.0
+mesh_pps: 2, 2
+algorithm: bicubic
+relative_reference_index: 24
+ 
+[bed_screws]
+screw1: 25, 50
+screw2: 265, 50
+screw3: 265, 270
+screw4: 25, 270
+
+[printer]
+kinematics: cartesian
+#max_velocity: 300
+max_velocity: 500
+#max_accel: 3000
+max_accel: 5000
+max_accel_to_decel: 3000
+max_z_velocity: 5
+max_z_accel: 100
+
+#[firmware_retraction]
+#retract_length: 6.5
+#retract_speed: 60
+#unretract_extra_length: 0
+#unretract_speed: 60
+
+[temperature_sensor Raspberry_Pi]
+sensor_type: temperature_host
+min_temp: 0
+max_temp: 100
+
+[virtual_sdcard]
+path: ~/gcode_files
+
+[display_status]
+
+[pause_resume]
+
+#telegram response setup
+[respond]
+default_type: echo
+#   Sets the default prefix of the "M118" and "RESPOND" output to one
+#   of the following:
+#       echo: "echo: " (This is the default)
+#       command: "// "
+#       error: "!! "
+default_prefix: echo:
+#   Directly sets the default prefix. If present, this value will
+#   override the "default_type"
+
+[include mainsail.cfg]
+
+[gcode_macro CALIBRATE_X]
+gcode:
+  G28
+  SHAPER_CALIBRATE AXIS=X
+  SAVE_CONFIG
+
+[gcode_macro CALIBRATE_Y]
+gcode:
+  G28
+  SHAPER_CALIBRATE AXIS=Y
+  SAVE_CONFIG
+
+[gcode_macro telegram_test]
+gcode:
+    RESPOND PREFIX=tgnotify MSG="test"
+  
+
+# --------------------------- Start Print ----------------------------
+[gcode_macro START_PRINT]
+variable_bed_temp: 60
+variable_extruder_temp: 185
+gcode:
+    # Start bed heating
+    M140 S{bed_temp}
+    # Use absolute coordinates
+    G90
+    # Reset the G-Code Z offset (adjust Z offset if needed)
+    SET_GCODE_OFFSET Z=0.0
+    # Home the printer
+    G28
+    # Move the nozzle near the bed
+    G1 Z5 F3000
+    # Move the nozzle very close to the bed
+    #G1 Z0.15 F300
+    # Wait for bed to reach temperature
+    M190 S{bed_temp}
+    # Set and wait for nozzle to reach temperature
+    M109 S{extruder_temp}
+    # Reset Extruder
+    G92 E0
+    # Move Z Axis up
+    G1 Z2.0 F3000
+    # Move to start position
+    G1 X2.1 Y20 Z0.28 F5000.0
+    # Draw the first line
+    G1 X2.1 Y200.0 Z0.28 F1500.0 E15
+    # Move to side a little
+    G1 X2.4 Y200.0 Z0.28 F5000.0
+    # Draw the second line
+    G1 X2.4 Y20 Z0.28 F1500.0 E30
+    # Reset Extruder
+    G92 E0
+    # Move Z Axis up
+    G1 Z2.0 F3000
+    # Print message on LCD
+    M117 By your command!
+# --------------------------------------------------------------------
+
+# ---------------------------- End Print -----------------------------
+[gcode_macro END_PRINT]
+variable_machine_depth: 235
+gcode:
+    # Turn off bed, extruder, and fan
+    M140 S0
+    M104 S0
+    M106 S0
+    # Relative positionning
+    G91
+    # Retract and raise Z
+    G1 Z0.2 E-2 F2400
+    # Wipe out
+    G1 X5 Y5 F3000
+    # Raise Z more
+    G1 Z10
+    #retract filament 100mm
+    G92 E0
+    G1 F2000 E-100  
+    G92 E0
+    # Absolute positionning
+    G90
+    # Present print
+    G1 X0 Y{machine_depth}
+    # Disable steppers
+    M84
+    # Print message on LCD
+    M117 That's All Folks
+# --------------------------------------------------------------------
+[gcode_macro T0]
+gcode:
+    SET_GCODE_OFFSET X=0 Y=0
+    SYNC_STEPPER_TO_EXTRUDER STEPPER=extruder1 EXTRUDER=
+    SYNC_STEPPER_TO_EXTRUDER STEPPER=extruder EXTRUDER=extruder
+
+[gcode_macro T1]
+gcode:
+    SET_GCODE_OFFSET X=0 Y=0
+    SYNC_STEPPER_TO_EXTRUDER STEPPER=extruder EXTRUDER=
+    SYNC_STEPPER_TO_EXTRUDER STEPPER=extruder1 EXTRUDER=extruder
+
+[gcode_macro ACTIVATE_EXTRUDER]
+description: Replaces built-in macro for a X-in, 1-out extruder configuration SuperSlicer fix
+rename_existing: ACTIVATE_EXTRUDER_BASE
+gcode:
+    {% if 'EXTRUDER' in params %}
+      {% set ext = params.EXTRUDER|default(EXTRUDER) %}
+      {% if ext == "extruder"%}
+        {action_respond_info("Switching to extruder0.")}
+        T0
+      {% elif ext == "extruder1" %}
+        {action_respond_info("Switching to extruder1.")}
+        T1
+      {% else %}
+        {action_respond_info("EXTRUDER value being passed.")}
+        ACTIVATE_EXTRUDER_BASE EXTRUDER={ext}
+      {% endif %}
+    {% endif %}
+
+[delayed_gcode activate_default_extruder]
+initial_duration: 1
+gcode:
+    ACTIVATE_EXTRUDER EXTRUDER=extruder
+
+[delayed_gcode bed_mesh_init]
+initial_duration: .01
+gcode:
+  BED_MESH_PROFILE LOAD=pla_10x10
+
+[gcode_macro M104]
+description: Replaces built-in gcode to not specify Tx due to single extruder
+rename_existing: M104.1
+gcode:
+    {% set s = params.S|default(0)|float %}
+    {% set t = params.T|default(0)|int %}
+    {% if 'S' in params %}
+      {%  if 'T' in params %}
+        M104.1 S{s}
+      {% else %}
+        M104.1 S{s}
+      {% endif %}
+    {% endif %}
+
+[gcode_macro M205]
+gcode:
+  {% if 'X' in params %}
+    SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY={params.X}
+  {% elif 'Y' in params %}
+    SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY={params.Y}
+  {% endif %}
+
+#*# <---------------------- SAVE_CONFIG ---------------------->
+#*# DO NOT EDIT THIS BLOCK OR BELOW. The contents are auto-generated.
+#*#
+#*# [bltouch]
+#*# z_offset = 3.265
+#*#
+#*# [bed_mesh pla]
+#*# version = 1
+#*# points =
+#*# 	0.012500, -0.015000, -0.031250, -0.045000, 0.017500
+#*# 	0.037500, -0.026250, -0.065000, -0.070000, -0.010000
+#*# 	0.070000, 0.010000, -0.035000, -0.050000, 0.005000
+#*# 	0.022500, -0.030000, -0.066250, -0.071250, -0.016250
+#*# 	0.010000, -0.017500, -0.040000, -0.046250, 0.000000
+#*# x_count = 5
+#*# y_count = 5
+#*# mesh_x_pps = 2
+#*# mesh_y_pps = 2
+#*# algo = bicubic
+#*# tension = 0.2
+#*# min_x = 60.0
+#*# max_x = 290.0
+#*# min_y = 6.0
+#*# max_y = 304.0
+#*#
+#*# [input_shaper]
+#*# shaper_type_x = mzv
+#*# shaper_freq_x = 85.6
+#*# shaper_type_y = mzv
+#*# shaper_freq_y = 30.8
+```
+
 
 Cura Start G-Code
 ```
