@@ -1007,7 +1007,7 @@ install_script: scripts/install-mobileraker-companion.sh
 ```
 
 # References
-Creality Sonic Pad - Printer Config for Ender 3 S1 Pro [STM32F401]
+Creality Sonic Pad - Printer Configs (e.g. CR10S)
 
 https://github.com/CrealityOfficial/Creality_Sonic_Pad/blob/main/printer_configrations/
 
