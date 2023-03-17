@@ -487,7 +487,8 @@ endstop_pin: probe:z_virtual_endstop
 position_max: 400
 position_min: -6.0
 
-#input shaper in printer config after measurment with sensor these values are some defaults for CR family printers working also for our CR-X pro
+#input shaper in printer config after measurment with sensor these values are some defaults for CR family printers working also for our CR-X Pro
+#CR10S
 #[input_shaper]
 #shaper_freq_x: 91.3
 #shaper_type_x: ei
