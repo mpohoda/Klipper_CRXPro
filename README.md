@@ -46,6 +46,7 @@ sudo service klipper stop
 sudo avrdude -v -p atmega2560 -c wiring -P /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0 -b 115200 -D -U flash:w:out/klipper.elf.hex:i
 sudo service klipper start
 ```
+you can try also different baud rate e.g. `-b 57600` for some boards
 
 # Configure
 printer.cfg (for Creality CR-X Pro - v.1 some unsupported values)
