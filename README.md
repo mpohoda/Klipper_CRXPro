@@ -1,6 +1,5 @@
 # Klipper Install and Config for Creality CR-X Pro
 
-# Klipper Install and Config for Creality Ender 3 S1 Pro
 ## Install
 Download latest RPi imager:
 
@@ -28,7 +27,7 @@ make menuconfig
 
 Setup as in picture, then Q(uit) and Y(es) for save:
 
-<picture>
+![image](https://user-images.githubusercontent.com/33594918/225866672-06355f93-8259-43a6-a8e6-abf712fa1a48.png)
 ```
 ls /dev/serial/by-id/*
 ```
