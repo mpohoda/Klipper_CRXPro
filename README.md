@@ -420,10 +420,20 @@ gcode:
 
 ```
 
-# Configure
 printer.cfg (for Creality CR-X Pro - v.2) this config was created during several prints and also after calibrations with sensonrs and test prints 
 
 ```
+# !Creality CR-X Pro
+# printer_size: 300x300x400
+# To use this config, during "make menuconfig" select the AVR atmega2560
+
+# Flash this firmware by "make flash FLASH_DEVICE="
+
+# See docs/Config_Reference.md for a description of parameters.
+
+[include mainsail.cfg]
+[include shell_command.cfg]
+
 [mcu]
 serial: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0
 
@@ -612,17 +622,15 @@ path: ~/gcode_files
 
 #telegram response setup
 [respond]
-default_type: echo
+#default_type: echo
 #   Sets the default prefix of the "M118" and "RESPOND" output to one
 #   of the following:
 #       echo: "echo: " (This is the default)
 #       command: "// "
 #       error: "!! "
-default_prefix: echo:
+#default_prefix: echo:
 #   Directly sets the default prefix. If present, this value will
 #   override the "default_type"
-
-[include mainsail.cfg]
 
 [gcode_macro CALIBRATE_X]
 gcode:
@@ -640,7 +648,6 @@ gcode:
 gcode:
     RESPOND PREFIX=tgnotify MSG="test"
   
-
 # --------------------------- Start Print ----------------------------
 [gcode_macro START_PRINT]
 variable_bed_temp: 60
@@ -711,6 +718,7 @@ gcode:
     # Print message on LCD
     M117 That's All Folks
 # --------------------------------------------------------------------
+
 [gcode_macro T0]
 gcode:
     SET_GCODE_OFFSET X=0 Y=0
@@ -749,7 +757,7 @@ gcode:
 [delayed_gcode bed_mesh_init]
 initial_duration: .01
 gcode:
-  BED_MESH_PROFILE LOAD=pla_10x10
+  BED_MESH_PROFILE LOAD=default
 
 [gcode_macro M104]
 description: Replaces built-in gcode to not specify Tx due to single extruder
@@ -779,7 +787,7 @@ gcode:
 #*# [bltouch]
 #*# z_offset = 3.265
 #*#
-#*# [bed_mesh pla]
+#*# [bed_mesh default]
 #*# version = 1
 #*# points =
 #*# 	0.012500, -0.015000, -0.031250, -0.045000, 0.017500
@@ -804,7 +812,6 @@ gcode:
 #*# shaper_type_y = mzv
 #*# shaper_freq_y = 30.8
 ```
-
 
 Cura Start G-Code
 ```
