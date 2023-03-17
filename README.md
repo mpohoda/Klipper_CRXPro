@@ -1,5 +1,47 @@
 # Klipper Install and Config for Creality CR-X Pro
 
+# Klipper Install and Config for Creality Ender 3 S1 Pro
+## Install
+Download latest RPi imager:
+
+[for Windows](https://downloads.raspberrypi.org/imager/imager_latest.exe)
+
+[for MacOS](https://downloads.raspberrypi.org/imager/imager_latest.dmg)
+
+Choose OS > Other specific-purpose OS > 3D printing > Mainsail OS
+
+Choose Storage (SD Card)
+
+Setup username, password, wifi, keyboard layout, etc.
+
+**Write** to card
+
+## Make & Flash
+Go to RPi command line via Putty:
+
+[latest](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+
+```
+cd ~/klipper
+make menuconfig
+```
+
+Setup as in picture, then Q(uit) and Y(es) for save:
+
+<picture>
+```
+ls /dev/serial/by-id/*
+```
+as output you get someting like this: `/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0`
+put it after `make flash FLASH_DEVICE=`
+
+```
+sudo service klipper stop
+make flash FLASH_DEVICE=/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0
+sudo service klipper start
+```
+
+# Configure
 printer.cfg for Creality CR-X Pro (v.1 - some unsupported values)
 ```
 [mcu]
