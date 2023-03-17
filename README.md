@@ -32,7 +32,8 @@ Setup as in picture, then Q(uit) and Y(es) for save:
 ls /dev/serial/by-id/*
 ```
 as output you get someting like this: `/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0`
-put it after `make flash FLASH_DEVICE=`
+
+and put it after `make flash FLASH_DEVICE=`
 
 ```
 sudo service klipper stop
