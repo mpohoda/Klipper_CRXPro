@@ -44,6 +44,15 @@ sudo service klipper start
 # Configure
 printer.cfg (for Creality CR-X Pro - v.1 some unsupported values)
 ```
+################## Creality CR-X Pro Klipper Config ###############
+# !Creality CR-X Pro
+# printer_size: 300x300x400
+# To use this config, during "make menuconfig" select the AVR atmega2560
+
+# Flash this firmware by "make flash FLASH_DEVICE="
+
+# See docs/Config_Reference.md for a description of parameters.
+
 [mcu]
 serial: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0
  
