@@ -420,7 +420,7 @@ gcode:
 
 ```
 
-printer.cfg (for Creality CR-X Pro - v.2) this config was created during several prints and also after calibrations with sensonrs and test prints 
+printer.cfg (for Creality CR-X Pro - v.2) this config was created during several prints and also after calibrations with sensors and test prints 
 
 ```
 # !Creality CR-X Pro
