@@ -56,7 +56,16 @@ printer.cfg (for Creality CR-X Pro - v.1 some unsupported values)
 [mcu]
 serial: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0
  
-##---- this config, the firmware should be compiled for the AVR atmega2560.
+[mcu rpi]
+serial: /tmp/klipper_host_mcu
+
+[adxl345]
+cs_pin: rpi:None
+
+[resonance_tester]
+accel_chip: adxl345
+probe_points:
+    100, 100, 20  # an example
  
 [stepper_x]
 step_pin: PF0
