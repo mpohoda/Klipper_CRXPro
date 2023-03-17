@@ -53,6 +53,9 @@ printer.cfg (for Creality CR-X Pro - v.1 some unsupported values)
 
 # See docs/Config_Reference.md for a description of parameters.
 
+[include mainsail.cfg]
+[include shell_command.cfg]
+
 [mcu]
 serial: /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10K2GAF-if00-port0
  
@@ -125,7 +128,6 @@ min_temp: 0
 max_temp: 265
 pressure_advance: 0.155
  
- 
 [extruder1]
 step_pin: PC1
 dir_pin:  PC3
@@ -136,7 +138,6 @@ nozzle_diameter: 0.400
 filament_diameter: 1.750 
 shared_heater: extruder
 pressure_advance: 0.155
- 
  
 [heater_bed]
 heater_pin: PH5
@@ -164,7 +165,7 @@ sensor_pin: ^PD3
 control_pin: PB5
 x_offset: 55
 y_offset: -6
-z_offset: 7
+z_offset: 0
 samples: 2
 speed: 6.0
 pin_up_touch_mode_reports_triggered: False
@@ -194,6 +195,228 @@ max_velocity: 300
 max_accel: 3000
 max_z_velocity: 5
 max_z_accel: 100
+
+[temperature_sensor Raspberry_Pi]
+sensor_type: temperature_host
+min_temp: 0
+max_temp: 100
+
+[virtual_sdcard]
+path: ~/printer_data/gcodes
+
+[display_status]
+
+[pause_resume]
+recover_velocity: 25
+
+[gcode_macro PAUSE]
+description: Pause the actual running print
+rename_existing: PAUSE_BASE
+### change this if you need more or less extrusion ###
+variable_extrude: 1.0
+gcode:
+  ##### read E from pause macro #####
+  {% set E = printer["gcode_macro PAUSE"].extrude|float %}
+  ##### set park positon for x and y #####
+  # default is your max posion from your printer.cfg
+  {% set x_park = printer.toolhead.axis_maximum.x|float - 5.0 %}
+  {% set y_park = printer.toolhead.axis_maximum.y|float - 5.0 %}
+  ##### calculate save lift position #####
+  {% set max_z = printer.toolhead.axis_maximum.z|float %}
+  {% set act_z = printer.toolhead.position.z|float %}
+  {% if act_z < (max_z - 2.0) %}
+      {% set z_safe = 2.0 %}
+  {% else %}
+      {% set z_safe = max_z - act_z %}
+  {% endif %}
+  ##### end of definitions #####
+  PAUSE_BASE
+  G91
+  {% if printer.extruder.can_extrude|lower == 'true' %}
+    G1 E-{E} F2100
+  {% else %}
+    {action_respond_info("Extruder not hot enough")}
+  {% endif %}
+  {% if "xyz" in printer.toolhead.homed_axes %}
+    G1 Z{z_safe} F900
+    G90
+    G1 X{x_park} Y{y_park} F6000
+  {% else %}
+    {action_respond_info("Printer not homed")}
+  {% endif %} 
+
+[gcode_macro RESUME]
+description: Resume the actual running print
+rename_existing: RESUME_BASE
+gcode:
+  ##### read E from pause macro #####
+  {% set E = printer["gcode_macro PAUSE"].extrude|float %}
+  #### get VELOCITY parameter if specified ####
+  {% if 'VELOCITY' in params|upper %}
+    {% set get_params = ('VELOCITY=' + params.VELOCITY)  %}
+  {%else %}
+    {% set get_params = "" %}
+  {% endif %}
+  ##### end of definitions #####
+  {% if printer.extruder.can_extrude|lower == 'true' %}
+    G91
+    G1 E{E} F2100
+  {% else %}
+    {action_respond_info("Extruder not hot enough")}
+  {% endif %}  
+  RESUME_BASE {get_params}
+
+[gcode_macro CANCEL_PRINT]
+description: Cancel the actual running print
+rename_existing: CANCEL_PRINT_BASE
+gcode:
+  TURN_OFF_HEATERS
+  {% if "xyz" in printer.toolhead.homed_axes %}
+    G91
+    G1 Z4.5 F300
+    G90
+  {% else %}
+    {action_respond_info("Printer not homed")}
+  {% endif %}
+    G28 X Y
+  {% set y_park = printer.toolhead.axis_maximum.y|float - 5.0 %}
+    G1 Y{y_park} F2000
+    M84
+  CANCEL_PRINT_BASE
+
+[gcode_macro M75]
+gcode:
+
+[gcode_macro M77]
+gcode:
+
+[gcode_macro G29]
+gcode:
+  G28
+  bed_mesh_calibrate
+  G1 X0 Y0 Z10 F4200
+  # save_config
+
+[gcode_macro _POWER_OFF_PRINTER]
+gcode:
+  {action_call_remote_method("set_device_power",
+                             device="printer",
+                             state="off")}
+
+[gcode_macro START_PRINT]
+variable_bed_temp: 60
+variable_extruder_temp: 185
+gcode:
+    # Turn ON Power for DRYER
+    POWER_ON_DRYER
+    # Start bed heating
+    M140 S{bed_temp}
+    # Use absolute coordinates
+    G90
+    # Reset the G-Code Z offset (adjust Z offset if needed)
+    ###SET_GCODE_OFFSET Z=0
+    # Home the printer
+    G28
+    # Load bed level
+    M420
+    # Move the nozzle near the bed
+    G1 Z10 F3000
+    # Move the nozzle very close to the bed
+    ###G1 Z0.15 F300
+    # Wait for bed to reach temperature
+    M190 S{bed_temp}
+    # Set and wait for nozzle to reach temperature
+    M109 S{extruder_temp}
+    # Reset Extruder
+    G92 E0
+    # Move Z Axis up
+    G1 Z2.0 F3000
+    # Move to start position
+    G1 X2.1 Y20 Z0.28 F5000.0
+    # Draw the first line
+    G1 X2.1 Y200.0 Z0.28 F1500.0 E15
+    # Move to side a little
+    G1 X2.4 Y200.0 Z0.28 F5000.0
+    # Draw the second line
+    G1 X2.4 Y20 Z0.28 F1500.0 E30
+    # Reset Extruder
+    G92 E0
+    # Move Z Axis up
+    G1 Z2.0 F3000
+    # Print message on LCD
+    M117 Printing...
+
+[gcode_macro END_PRINT]
+variable_machine_depth: 235
+gcode:
+    # Turn off bed, extruder, and fan
+    M140 S0
+    M104 S0
+    M106 S0
+    # Relative positionning
+    G91
+    # Retract a bit
+    G1 E-2 F2700
+    # Retract and raise Z
+    G1 Z0.2 E-2 F2400
+    # Wipe out
+    G1 X5 Y5 F3000
+    # Raise Z more
+    G1 Z10
+    # Absolute positionning
+    G90
+    # Present print
+    G1 X0 Y{machine_depth}
+    # Disable steppers
+    M84 X Y E ;Disable all steppers but Z
+    POWER_OFF_DRYER ;Turn OFF Power for DRYER
+    UPDATE_DELAYED_GCODE ID=POWER_OFF_CHECK DURATION=30
+    M117 Finished! Cooling down under 50°C before POWER OFF...
+
+[gcode_macro M420]
+gcode:
+  BED_MESH_PROFILE LOAD=default
+  
+[delayed_gcode bed_mesh_init]
+initial_duration: .01
+gcode:
+  BED_MESH_PROFILE LOAD=default
+
+[gcode_macro AUTO_CALIBRATE_Y]
+gcode:
+  G28
+  SHAPER_CALIBRATE AXIS=Y
+  SAVE_CONFIG
+
+[gcode_macro AUTO_CALIBRATE_X]
+gcode:
+  G28
+  SHAPER_CALIBRATE AXIS=X
+  SAVE_CONFIG
+
+[delayed_gcode POWER_OFF_CHECK]
+gcode:
+  {% if printer.idle_timeout.state == "Idle" or printer.idle_timeout.state == "Ready" %}
+    {% if printer.extruder.temperature < 60.0 and printer.heater_bed.temperature < 50.0 %}
+        {% if printer.extruder.target == 0.0 and printer.heater_bed.target == 0.0 %}
+            UPDATE_DELAYED_GCODE ID=POWER_OFF_CHECK DURATION=0
+            POWER_OFF ;Turn OFF Power for printer
+        {% else %}
+            UPDATE_DELAYED_GCODE ID=POWER_OFF_CHECK DURATION=2
+        {% endif %}
+    {% else %}
+        {% if printer.idle_timeout.state == "Printing" %}
+            UPDATE_DELAYED_GCODE ID=POWER_OFF_CHECK DURATION=0
+        {% else %}
+            {% if printer.extruder.target == 0.0 and printer.heater_bed.target == 0.0 %}
+                UPDATE_DELAYED_GCODE ID=POWER_OFF_CHECK DURATION=2
+            {% else %}
+                UPDATE_DELAYED_GCODE ID=POWER_OFF_CHECK DURATION=0
+            {% endif %}
+        {% endif %}
+    {% endif %}
+  {% endif %}
+
 ```
 
 
